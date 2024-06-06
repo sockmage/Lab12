@@ -85,30 +85,60 @@ fun HomeScreen(viewModel: MainViewModel) {
             Timer().schedule(3000) { isToastVisible = false }
         }
     }
+    val homeScreenItems = mapHomeScreenItems(posts)
     Box(modifier = Modifier.fillMaxSize()) {
         LazyColumn(
-            modifier = Modifier.background(
-                color =
-                MaterialTheme.colors.secondary
-            )
-        ) {
-            items(posts) {
-                if (it.type == PostType.TEXT) {
-                    TextPost(it, onJoinButtonClick = onJoinClickAction)
-                } else {
-                    ImagePost(it, onJoinButtonClick = onJoinClickAction)
-                }
-                Spacer(modifier = Modifier.height(6.dp))
-            }
-        }
-        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 16.dp)
-        ) {
-            JoinedToast(visible = isToastVisible)
-        }
+                .background(color = MaterialTheme.colors.secondary),
+            content = {
+                items(
+                    items = homeScreenItems,
+                    itemContent = { item ->
+                        if (item.type == HomeScreenItemType.TRENDING) {
+                            TrendingTopics(
+                                trendingTopics = trendingItems,
+                                modifier = Modifier.padding(
+                                    top = 16.dp, bottom = 6.dp
+                                )
+                            )
+                        } else if (item.post != null) {
+                            val post = item.post
+                            if (post.type == PostType.TEXT) {
+                                TextPost(
+                                    post = post,
+                                    onJoinButtonClick = onJoinClickAction
+                                )
+                            } else {
+                                ImagePost(
+                                    post = post,
+                                    onJoinButtonClick = onJoinClickAction
+                                )
+                            }
+                            Spacer(modifier = Modifier.height(6.dp))
+                        }
+                    })
+
+            }
+        )
     }
+}
+
+
+private fun mapHomeScreenItems(
+    posts: List<PostModel>
+): List<HomeScreenItem> {
+    val homeScreenItems = mutableListOf<HomeScreenItem>()
+
+    homeScreenItems.add(
+        HomeScreenItem(HomeScreenItemType.TRENDING)
+    )
+
+    posts.forEach { post ->
+        homeScreenItems.add(
+            HomeScreenItem(HomeScreenItemType.POST, post)
+        )
+    }
+    return homeScreenItems
 }
 
 
